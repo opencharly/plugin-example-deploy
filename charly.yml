@@ -7,8 +7,58 @@
 #
 # Declaring discover: is the whole fix: the candy is scanned, the CUE schema gate
 # applies, and the STOCK `charly box validate` step starts working with no workflow
-# change. This file declares no entities of its own - it only tells charly where to look.
-version: 2026.232.0520
+# change. This file also declares the R10 witness bed (below).
+version: 2026.249.2125
 discover:
     - path: candy
       recursive: true
+
+check-exampledeploy:
+    exampledeploy:
+        disposable: true
+        lifecycle: dev
+        description: >-
+            Sole proof of the external (out-of-process) deploy-target lifecycle (Add/Test/Update/Del) over the E3b ExecutorService reverse channel, AND of the F2 executable deploy channel. Composes plugin-example-deploy as an external deploy: substrate; Add Invokes the host-built plugin out-of-process with the deployment's InstallPlan views — carrying the serializable per-step IR. The plugin dials back through the SDK Executor to (a) write an apply + a probe marker, (b) WALK + EXECUTE the plan's steps on the host venue (a file-write step lands /tmp/charly-exampledeploy-steps/written and a shell-hook env step lands env.d/plugin-example-deploy.env), and (c) PUSH /tmp/charly-exampledeploy-steps/pushed via the reverse-channel PutFile leg. Host-side command probes assert the probe marker, the executed-step effects, and the pushed file; the fresh-rebuild (charly update) re-applies idempotently; teardown (charly deploy del) replays the recorded plugin-script reverse ops so every scratch dir is gone (zero residue).
+        add_candy:
+            - plugin-example-deploy
+        plan:
+            - check: command=test -f /tmp/charly-exampledeploy/check-exampledeploy/probe && echo EXAMPLEDEPLOY-PROBE-PRESENT
+              id: exampledeploy-applied
+              description: the external deploy plugin applied its probe marker on the host venue via the E3b reverse channel
+              stdout:
+                - contains: EXAMPLEDEPLOY-PROBE-PRESENT
+              context:
+                - runtime
+              command:
+                command: "test -f /tmp/charly-exampledeploy/check-exampledeploy/probe && echo EXAMPLEDEPLOY-PROBE-PRESENT"
+                in_container: false
+            - check: the external deploy plugin EXECUTED the file-write step from the round-tripped per-step IR — the authored dest holds the step's content
+              id: exampledeploy-step-write
+              description: F2 — the serializable InstallPlan.Steps round-tripped to the plugin, which executed the Op write step on the venue
+              stdout:
+                - contains: EXAMPLEDEPLOY-STEP-WRITE-OK
+              context:
+                - runtime
+              command:
+                command: "cat /tmp/charly-exampledeploy-steps/written"
+                in_container: false
+            - check: the external deploy plugin EXECUTED the shell-hook (env:) step — the rendered env.d file holds the contributed env var
+              id: exampledeploy-step-env
+              description: F2 — the ShellHook step round-tripped and the plugin materialized its env var on the venue
+              stdout:
+                - contains: EXAMPLEDEPLOY_STEP_ENV=present
+              context:
+                - runtime
+              command:
+                command: "cat /tmp/charly-exampledeploy-steps/env.d/plugin-example-deploy.env"
+                in_container: false
+            - check: the external deploy plugin PUSHED a file via the new reverse-channel PutFile leg — the pushed file landed on the venue with its content
+              id: exampledeploy-putfile
+              description: F2 — the ExecutorService PutFile RPC placed plugin-originated content on the venue
+              stdout:
+                - contains: EXAMPLEDEPLOY-PUTFILE-OK
+              context:
+                - runtime
+              command:
+                command: "cat /tmp/charly-exampledeploy-steps/pushed"
+                in_container: false
