@@ -1,7 +1,5 @@
-version: 2026.232.0520
 plugin-example-deploy:
     candy:
-        version: 2026.180.0001
         description: |-
             Reference OUT-OF-TREE charly DEPLOY plugin — a standalone Go module
             (go.mod + main.go) serving the `exampledeploy` deploy TARGET over
