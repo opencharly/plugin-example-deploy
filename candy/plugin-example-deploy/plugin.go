@@ -16,7 +16,7 @@
 //     binary / builder artifacts);
 //
 // and RETURNS a structured DeployReply carrying a plugin-script reverse op the host
-// RECORDS in the ledger and REPLAYS at `charly fleet del` (zero operator side-effect —
+// RECORDS in the ledger and REPLAYS at `charly deploy del` (zero operator side-effect —
 // every path lives under disposable /tmp scratch dirs). charly host-builds it and serves
 // it OUT-OF-PROCESS over go-plugin gRPC (LocalTransport), the same path
 // candy/plugin-example-external rides for verbs.
@@ -149,7 +149,7 @@ func (provider) Invoke(ctx context.Context, req *pb.InvokeRequest) (*pb.InvokeRe
 		return nil, fmt.Errorf("plugin-example-deploy: PutFile %s: %w", pushed, err)
 	}
 
-	// Teardown ops, replayed at `charly fleet del`:
+	// Teardown ops, replayed at `charly deploy del`:
 	//   - the user-scope scratch-dir cleanup (markers + step witnesses);
 	//   - whatever ReverseOps the host-engine steps returned (folded in — record-and-replay).
 	reverseOps := []spec.ReverseOp{

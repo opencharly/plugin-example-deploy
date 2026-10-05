@@ -19,7 +19,7 @@ plugin-example-deploy:
             machinery (download the published package, or build it via the
             `charly generate-packages` plugin in the dev path) and installs the artifact
             onto the venue. It returns plugin-script reverse ops the host records in
-            the install ledger and replays at `charly fleet del`. The deploy-class
+            the install ledger and replays at `charly deploy del`. The deploy-class
             companion of the verb-class candy/plugin-example-external.
         plugin:
             providers:
