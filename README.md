@@ -17,7 +17,7 @@ and the plugin dials back through the SDK executor to:
   (the two kinds needing the host build engine).
 
 It returns plugin-script reverse ops that the host records in the install ledger
-and replays at `charly fleet del`, so teardown leaves zero residue.
+and replays at `charly deploy del`, so teardown leaves zero residue.
 
 ## What it provides
 
